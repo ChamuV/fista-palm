@@ -1,149 +1,194 @@
+## ✨ Notes
+
+This project was developed as a research-style exploration of modern optimisation methods, with an emphasis on **clarity, extensibility, and empirical insight** rather than black-box usage.
 # FISTA–PALM
 
-A modular and extensible implementation of advanced **nonconvex optimisation algorithms** combining **FISTA-style acceleration** with **PALM-type block coordinate updates**.
+## Accelerated Block-Coordinate Optimisation for Nonconvex Problems
 
-This project studies how modern optimisation techniques behave in practice across:
-- sparse matrix factorisation
-- image reconstruction and denoising
-- multi-block nonconvex problems
+This repository contains the implementation and experimental study of the **FISTA–PALM algorithm**, a hybrid optimisation method developed as part of an MSc research project at the University of Oxford.
 
----
+The project investigates how acceleration techniques interact with block-coordinate methods in nonconvex, nonsmooth optimisation settings, with a focus on both theoretical motivation and empirical performance.
 
-## 🔍 Core Idea
+
+## 1. Problem Setting
 
 We consider optimisation problems of the form:
 
 \[
-\min_{x} \; f(x) + g(x)
+\min_{x,y} \; f(x) + g(y) + H(x,y)
 \]
 
 where:
-- \( f \) is smooth (differentiable)
-- \( g \) is non-smooth but proximable
+- \( f \) and \( g \) are possibly nonsmooth but proximable
+- \( H \) is smooth and couples the variables
 
-and extend this to **multi-block settings** such as:
+This structure naturally appears in applications such as:
+- sparse matrix factorisation
+- image reconstruction and denoising
+- representation learning
+
+Two key models studied in this repository are:
+
+### Two-block factorisation
+\[
+A \approx X Y^T
+\]
+
+### Three-block factorisation
+\[
+A \approx X B Y^T
+\]
+
+
+## 2. Algorithms
+
+The repository implements and compares the following optimisation methods:
+
+- **PALM** (Proximal Alternating Linearised Minimisation)  
+- **iPALM** (Inertial PALM)  
+- **FISTA–PALM** (accelerated variant proposed in this project)
+
+This work was carried out as part of an MSc project at the University of Oxford, with the aim of designing and evaluating an accelerated block-coordinate method for nonconvex optimisation.
+
+### FISTA–PALM
+
+FISTA–PALM combines:
+- the block-coordinate structure of PALM
+- Nesterov-style acceleration from FISTA
+
+The goal is to retain the simplicity and modularity of PALM while improving convergence speed.
+
+#### Algorithmic structure
+
+Given variables $x$ and $y$, each iteration consists of:
+
+1. **Extrapolation (inertial step)**
 
 \[
-A \approx X Y^T \quad \text{(2-block)}
+\tilde{x}_k = x_k + \beta_k (x_k - x_{k-1}), \qquad
+\tilde{y}_k = y_k + \beta_k (y_k - y_{k-1})
+\]
+
+where the acceleration parameter is defined via
+
+\[
+t_k = \frac{1 + \sqrt{1 + 4 t_{k-1}^2}}{2}, \qquad
+\beta_k = \frac{t_{k-1} - 1}{t_k}
+\]
+
+2. **Block updates (proximal gradient steps)**
+
+\[
+x_{k+1} = \operatorname{prox}_{f/L_x}\big(\tilde{x}_k - \tfrac{1}{L_x} \nabla_x H(\tilde{x}_k, y_k)\big)
 \]
 
 \[
-A \approx X B Y^T \quad \text{(3-block)}
+y_{k+1} = \operatorname{prox}_{g/L_y}\big(\tilde{y}_k - \tfrac{1}{L_y} \nabla_y H(x_{k+1}, \tilde{y}_k)\big)
 \]
 
----
+where $L_x$ and $L_y$ are Lipschitz constants for the partial gradients.
 
-## 🚀 What This Project Does
+3. **Iteration**
 
-This repository goes beyond a simple implementation and provides a **full experimental study** of:
+The process is repeated until convergence, typically monitored via the objective value.
 
-### Algorithms
-- **PALM** (Proximal Alternating Linearised Minimisation)
-- **iPALM** (inertial PALM)
-- **FISTA–PALM** (accelerated variant)
+#### Extension to multi-block problems
 
-### Experiments
-- Synthetic matrix factorisation
-- SVD vs random initialisation
-- Time vs objective analysis
-- Conditioning and singular value scaling
-- ORL face reconstruction
-- BSDS500 image denoising
-- COIL-20 **three-block sparse factorisation**
+The same idea extends naturally to three-block models of the form
 
-### Key Contributions
-- Clean abstraction of optimisation problems
-- Plug-and-play solver interface
-- Extension from 2-block → 3-block nonconvex optimisation
-- Systematic empirical comparison across regimes
+\[
+A \approx X B Y^T
+\]
 
----
+by applying extrapolation and proximal updates sequentially to each block $(X, B, Y)$.
 
-## 🧠 Why This Is Interesting
 
-While FISTA is well understood for convex problems, its behaviour in **nonconvex and block-structured settings** is much less clear.
-
-This project explores:
-- when acceleration helps
-- when it destabilises optimisation
-- how inertia interacts with proximal updates
-- how complexity increases in multi-block models
-
----
-
-## 📊 Repository Structure
+## 3. Repository Overview
 
 ```
 src/
-  problems/     problem formulations (2-block, 3-block)
+  problems/     optimisation problem definitions
   solvers/      PALM, iPALM, FISTA–PALM implementations
-  utils/        data loading, plotting, IO
+  utils/        data loading, plotting, and IO utilities
+  cli           command-line interface for running FISTA–PALM
 
-notebooks/      full experimental pipeline (10 experiments)
+notebooks/      experimental pipeline (10 structured experiments)
 
 results/        generated figures and tables
 
-tests/          basic validation
+tests/          validation tests
 ```
 
----
 
-## ⚡ Quick Start
+## 4. Experiments
 
-Install dependencies:
+The repository contains a structured experimental study covering:
+
+- Synthetic sparse matrix factorisation
+- Initialisation strategies (random vs SVD)
+- Time vs objective scaling
+- Conditioning and singular value effects
+- ORL face reconstruction
+- BSDS500 image denoising
+- COIL-20 three-block sparse factorisation
+
+These experiments evaluate:
+- convergence speed
+- stability under different regimes
+- reconstruction quality in imaging tasks
+
+
+## 5. Key Findings
+
+Across experiments, the following patterns are observed:
+
+- FISTA–PALM achieves faster objective reduction than PALM, particularly in early iterations
+- Acceleration remains effective in both synthetic and real-data settings
+- Multi-block problems (e.g. three-block factorisation) are significantly more challenging for standard PALM
+- FISTA–PALM produces improved reconstructions under fixed iteration budgets
+- Acceleration may introduce mild instability near convergence, consistent with known behaviour of inertial methods
+
+
+## 6. Usage
+
+### Installation
 
 ```
 pip install -r requirements.txt
 ```
 
-Run the CLI (FISTA–PALM on synthetic data):
+### Run FISTA–PALM from CLI
 
 ```
 python -m src.cli --m 100 --n 80 --rank 10 --plot
 ```
 
-Run experiments:
+### Run experiments
 
 ```
 jupyter notebook notebooks/
 ```
 
----
 
-## 📈 Highlights
+## 7. References
 
-- FISTA–PALM consistently achieves **faster objective decay** than PALM
-- Acceleration benefits persist in **image reconstruction tasks**
-- Multi-block problems (e.g. COIL-20) expose **limitations of naive alternating schemes**
-- Synthetic vs real data comparisons reveal **robustness patterns**
-
----
-
-## 📚 References
-
-**PALM**  
 Bolte, Sabach, Teboulle (2014)  
-*Proximal Alternating Linearized Minimization for Nonconvex and Nonsmooth Problems*  
-https://doi.org/10.1137/140965641
+*Proximal alternating linearized minimization for nonconvex and nonsmooth problems*  
+https://doi.org/10.1007/s10107-013-0701-9  
 
-**iPALM**  
 Pock, Sabach (2016)  
-*Inertial Proximal Alternating Linearized Minimization (iPALM)*  
-https://doi.org/10.1137/15M1021839
+*Inertial Proximal Alternating Linearized Minimization (iPALM) for Nonconvex and Nonsmooth Problems*  
+https://doi.org/10.1137/16M1064064  
 
-**FISTA**  
+Liang, Monteiro, Sim (2019)  
+*A FISTA-type accelerated gradient algorithm for solving smooth nonconvex composite optimization problems*  
+https://arxiv.org/abs/1905.07010  
+
 Beck, Teboulle (2009)  
-*A Fast Iterative Shrinkage-Thresholding Algorithm*  
-https://doi.org/10.1137/080716542
+*A Fast Iterative Shrinkage-Thresholding Algorithm for Linear Inverse Problems*  
+https://doi.org/10.1137/080716542  
 
----
 
-## 📄 License
+## License
 
-MIT License
-
----
-
-## ✨ Notes
-
-This project was developed as a research-style exploration of modern optimisation methods, with an emphasis on **clarity, extensibility, and empirical insight** rather than black-box usage.
+This project is licensed under the MIT License. See the `LICENSE` file for details.
