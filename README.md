@@ -11,6 +11,14 @@ The project focuses on:
 - algorithmic design
 - evaluation across a range of problem settings
 
+## Example Result
+
+The figure below shows reconstruction quality and convergence behaviour on the ORL face dataset.
+
+FISTA–PALM achieves faster objective reduction and produces sharper reconstructions compared to PALM and iPALM under the same iteration budget.
+
+![ORL Reconstructions](results/figs/orl_reconstruction_convergence_r50_s0.25_iter200.png)
+
 
 ## 1. Problem Setting
 
@@ -177,6 +185,8 @@ python -m src.cli --m 100 --n 80 --rank 10 --plot
 
 ## 8. References
 
+### Algorithms
+
 Bolte, Sabach, Teboulle (2014)
 Proximal alternating linearized minimization for nonconvex and nonsmooth problems
 https://doi.org/10.1007/s10107-013-0701-9
@@ -188,6 +198,19 @@ https://doi.org/10.1137/16M1064064
 Beck, Teboulle (2009)
 A Fast Iterative Shrinkage-Thresholding Algorithm for Linear Inverse Problems
 https://doi.org/10.1137/080716542
+
+### Datasets
+
+Samaria, F. S., & Harter, A. C. (1994)  
+Parameterisation of a stochastic model for human face identification  
+(ORL Face Database)
+
+BSDS500 dataset  
+https://www2.eecs.berkeley.edu/Research/Projects/CS/vision/grouping/BSR/
+
+COIL-20 dataset  
+Columbia Object Image Library  
+https://www.cs.columbia.edu/CAVE/software/softlib/coil-20.php
 
 
 ## License
