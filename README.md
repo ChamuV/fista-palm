@@ -2,14 +2,14 @@
 
 ## Accelerated Block-Coordinate Optimisation for Nonconvex Problems
 
-This repository contains the implementation and experimental study of the **FISTA–PALM algorithm**, a hybrid optimisation method for solving structured nonconvex problems.
+This repository contains the implementation and experimental study of **FISTA–PALM**, a hybrid optimisation algorithm that combines the block-coordinate structure of PALM with FISTA-style acceleration for structured nonconvex problems.
 
-The work was developed as part of an MSc project, with the aim of investigating how acceleration techniques can be integrated into block-coordinate optimisation methods.
+The work was developed as part of an MSc project and investigates how acceleration techniques can be integrated into proximal alternating methods.
 
-The project focuses on both:
+The project focuses on:
 
-- algorithmic design  
-- empirical evaluation across a range of problem settings  
+- algorithmic design
+- evaluation across a range of problem settings
 
 
 ## 1. Problem Setting
@@ -80,17 +80,17 @@ $$\tilde{y}_k = y_k + \frac{t_k - 1}{t_{k+1}} (y_k - y_{k-1})$$
 
 3. **Update first block**
 
-$$x_{k+1} = \operatorname{prox}_{f/L_x} \left( \tilde{x}_k - \frac{1}{L_x} \nabla_x H(\tilde{x}_k, y_k) \right)$$
+$$x_{k+1} = \mathrm{prox}_{f/L_x} \left( \tilde{x}_k - \frac{1}{L_x} \nabla_x H(\tilde{x}_k, y_k) \right)$$
 
 4. **Update second block**
 
-$$y_{k+1} = \operatorname{prox}_{g/L_y} \left( \tilde{y}_k - \frac{1}{L_y} \nabla_y H(x_{k+1}, \tilde{y}_k) \right)$$
+$$y_{k+1} = \mathrm{prox}_{g/L_y} \left( \tilde{y}_k - \frac{1}{L_y} \nabla_y H(x_{k+1}, \tilde{y}_k) \right)$$
 
 
 ### Interpretation
 
 - PALM performs alternating proximal gradient steps  
-- FISTA–PALM introduces momentum across iterations  
+- FISTA–PALM introduces Nestorov-like acceleration across iterations  
 - This leads to:
   - faster objective decrease  
   - improved practical performance  
@@ -167,10 +167,6 @@ https://doi.org/10.1007/s10107-013-0701-9
 Pock, Sabach (2016)
 Inertial Proximal Alternating Linearized Minimization (iPALM) for Nonconvex and Nonsmooth Problems
 https://doi.org/10.1137/16M1064064
-
-Liang, Monteiro, Sim (2019)
-A FISTA-type accelerated gradient algorithm for solving smooth nonconvex composite optimization problems
-https://arxiv.org/abs/1905.07010
 
 Beck, Teboulle (2009)
 A Fast Iterative Shrinkage-Thresholding Algorithm for Linear Inverse Problems
