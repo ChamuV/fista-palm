@@ -1,5 +1,7 @@
 # FISTA–PALM
 
+An accelerated proximal algorithm for nonconvex matrix factorisation with strong empirical performance on real and synthetic datasets.
+
 ## Accelerated Block-Coordinate Optimisation for Nonconvex Problems
 
 This repository contains the implementation and experimental study of **FISTA–PALM**, a hybrid optimisation algorithm that combines the block-coordinate structure of PALM with FISTA-style acceleration for structured nonconvex problems.
@@ -13,12 +15,11 @@ The project focuses on:
 
 ## Example Result
 
-The figure below shows reconstruction quality and convergence behaviour on the ORL face dataset.
+ORL face reconstruction and convergence comparison.
 
-FISTA–PALM achieves faster objective reduction and produces sharper reconstructions compared to PALM and iPALM under the same iteration budget.
+FISTA–PALM achieves faster objective reduction and produces sharper reconstructions than PALM and iPALM under the same iteration budget.
 
 ![ORL Reconstructions](results/figs/orl_reconstruction_convergence_r50_s0.25_iter200.png)
-
 
 ## 1. Problem Setting
 
@@ -68,7 +69,7 @@ The repository implements:
 FISTA–PALM combines:
 
 - the block-coordinate structure of PALM  
-- Nesterov acceleration from FISTA  
+- Nestorov acceleration from FISTA  
 
 The key idea is to perform updates at an extrapolated point rather than the current iterate.
 
@@ -162,7 +163,7 @@ These experiments evaluate:
 
 Across experiments, the following patterns are observed:
 
-- FISTA–PALM achieves faster objective reduction than PALM, particularly in early iterations  
+- FISTA–PALM consistently achieves faster objective reduction than PALM, particularly in early iterations  
 - Acceleration remains effective in both synthetic and real-data settings  
 - Multi-block problems (e.g. three-block factorisation) are significantly more challenging for standard PALM  
 - FISTA–PALM produces improved reconstructions under fixed iteration budgets  
