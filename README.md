@@ -70,22 +70,39 @@ Given initial variables $x^0, y^0$, set $t_0 = 1$. For $k = 0,1,\dots$:
 
 1. **Compute extrapolation factor**
 
-$$t_{k+1} = \frac{1 + \sqrt{1 + 4t_k^2}}{2}$$
+$$
+t_{k+1} = \frac{1 + \sqrt{1 + 4t_k^2}}{2}
+$$
 
 2. **Extrapolate variables**
 
-$$\tilde{x}_k = x_k + \frac{t_k - 1}{t_{k+1}} (x_k - x_{k-1})$$
+$$
+\tilde{x}_k = x_k + \frac{t_k - 1}{t_{k+1}} (x_k - x_{k-1})
+$$
 
-$$\tilde{y}_k = y_k + \frac{t_k - 1}{t_{k+1}} (y_k - y_{k-1})$$
+$$
+\tilde{y}_k = y_k + \frac{t_k - 1}{t_{k+1}} (y_k - y_{k-1})
+$$
 
 3. **Update first block**
 
-$$x_{k+1} = \mathrm{prox}_{f/L_x} \left( \tilde{x}_k - \frac{1}{L_x} \nabla_x H(\tilde{x}_k, y_k) \right)$$
+$$
+x_{k+1} =
+\mathrm{prox}^{f}_{\eta_k}
+\left(
+\tilde{x}_k - \frac{1}{\eta_k} \nabla_x H(\tilde{x}_k, y_k)
+\right)
+$$
 
 4. **Update second block**
 
-$$y_{k+1} = \mathrm{prox}_{g/L_y} \left( \tilde{y}_k - \frac{1}{L_y} \nabla_y H(x_{k+1}, \tilde{y}_k) \right)$$
-
+$$
+y_{k+1} =
+\mathrm{prox}^{g}_{\tau_k}
+\left(
+\tilde{y}_k - \frac{1}{\tau_k} \nabla_y H(x_{k+1}, \tilde{y}_k)
+\right)
+$$
 
 ### Interpretation
 
