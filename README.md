@@ -180,13 +180,9 @@ Pock, Sabach (2016)
 *Inertial Proximal Alternating Linearized Minimization (iPALM) for Nonconvex and Nonsmooth Problems*  
 https://doi.org/10.1137/16M1064064  
 
-Liang, Monteiro, Sim (2019)  
-*A FISTA-type accelerated gradient algorithm for solving smooth nonconvex composite optimization problems*  
-https://arxiv.org/abs/1905.07010  
-
 Beck, Teboulle (2009)  
 *A Fast Iterative Shrinkage-Thresholding Algorithm for Linear Inverse Problems*  
-https://doi.org/10.1137/080716542  
+https://doi.org/10.1137/080716542
 
 
 ## License
