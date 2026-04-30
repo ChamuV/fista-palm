@@ -3,6 +3,7 @@
 import os
 import tarfile
 import urllib.request
+import zipfile
 from pathlib import Path
 
 import numpy as np
@@ -137,6 +138,53 @@ def download_bsds500(root):
     return train_dir
 
 
+def download_coil20(root):
+    root = Path(root)
+    data_dir = root / "data"
+    data_dir.mkdir(parents=True, exist_ok=True)
+
+    urls = [
+        "https://cave.cs.columbia.edu/old/databases/SLAM_coil-20_coil-100/coil-20/coil-20-proc.zip",
+        "http://cave.cs.columbia.edu/old/databases/SLAM_coil-20_coil-100/coil-20/coil-20-proc.zip",
+    ]
+
+    zip_path = data_dir / "coil-20-proc.zip"
+    extract_dir = data_dir / "coil-20-proc"
+
+    if not extract_dir.exists():
+        if not zip_path.exists():
+            last_error = None
+
+            for url in urls:
+                try:
+                    print(f"Downloading COIL-20 from {url}...")
+                    urllib.request.urlretrieve(url, zip_path)
+                    break
+                except Exception as err:
+                    last_error = err
+                    print(f"Download failed from {url}")
+
+                    if zip_path.exists():
+                        zip_path.unlink()
+
+            if not zip_path.exists():
+                raise RuntimeError(
+                    "Could not download COIL-20 automatically.\n"
+                    "Download manually from:\n"
+                    "https://cave.cs.columbia.edu/old/databases/SLAM_coil-20_coil-100/coil-20/\n"
+                    "and place 'coil-20-proc.zip' inside your data/ folder."
+                ) from last_error
+
+        print("Extracting COIL-20...")
+        with zipfile.ZipFile(zip_path, "r") as zip_ref:
+            zip_ref.extractall(data_dir)
+
+    if not extract_dir.exists():
+        raise FileNotFoundError(f"Could not find COIL-20 folder: {extract_dir}")
+
+    return extract_dir
+
+
 def load_images_as_matrix(folder_path, image_size=(128, 128), max_images=6):
     folder_path = Path(folder_path)
 
@@ -156,6 +204,35 @@ def load_images_as_matrix(folder_path, image_size=(128, 128), max_images=6):
         images.append(img.flatten())
 
     return np.stack(images, axis=1)
+
+
+def load_coil_matrix(folder_path, image_size=(32, 32), max_images=300):
+    folder_path = Path(folder_path)
+
+    image_files = sorted([
+        f for f in os.listdir(folder_path)
+        if f.lower().endswith(".png")
+    ])
+
+    if max_images is not None:
+        image_files = image_files[:max_images]
+
+    if len(image_files) == 0:
+        raise FileNotFoundError(f"No PNG images found in {folder_path}")
+
+    images = []
+
+    for file in image_files:
+        img = io.imread(folder_path / file, as_gray=True)
+        img = resize(img, image_size, anti_aliasing=True)
+        images.append(img.flatten())
+
+    A = np.stack(images, axis=1)
+
+    if A.max() > 0:
+        A = A / A.max()
+
+    return A, image_size
 
 
 def add_gaussian_noise(A, sigma=0.3, seed=42):
@@ -188,32 +265,3 @@ def stack_image_rows(rows, indices, image_shape):
 
 def reconstruct(X, Y):
     return X @ Y.T
-
-
-def load_coil_matrix(folder_path, image_size=(32, 32), max_images=300):
-    folder_path = Path(folder_path)
-
-    image_files = sorted([
-        f for f in os.listdir(folder_path)
-        if f.lower().endswith(".png")
-    ])
-
-    if max_images is not None:
-        image_files = image_files[:max_images]
-
-    if len(image_files) == 0:
-        raise FileNotFoundError(f"No PNG images found in {folder_path}")
-
-    images = []
-
-    for file in image_files:
-        img = io.imread(folder_path / file, as_gray=True)
-        img = resize(img, image_size, anti_aliasing=True)
-        images.append(img.flatten())
-
-    A = np.stack(images, axis=1)
-
-    if A.max() > 0:
-        A = A / A.max()
-
-    return A, image_size

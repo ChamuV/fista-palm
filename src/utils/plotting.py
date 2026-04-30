@@ -637,10 +637,17 @@ def plot_three_block_loss_comparison(
 ):
     set_style()
 
-    fig, ax = plt.subplots(figsize=(8, 5), facecolor="white")
+    fig, ax = plt.subplots(figsize=(9, 6), facecolor="white")
 
-    for method, hist in histories.items():
-        ax.plot(hist, label=method, **STYLES.get(method, {}))
+    methods = ["PALM", "FISTA-PALM"]
+
+    for method in methods:
+        if method in histories:
+            ax.plot(
+                histories[method],
+                label=method,
+                **STYLES.get(method, {}),
+            )
 
     ax.set_yscale("log")
     ax.set_xlabel("Iteration")
@@ -669,7 +676,7 @@ def plot_three_block_reconstruction_grid(
     fig, axs = plt.subplots(
         2,
         n_images,
-        figsize=(2 * n_images, 4),
+        figsize=(2 * n_images, 4.5),
         facecolor="white",
     )
 
@@ -680,12 +687,74 @@ def plot_three_block_reconstruction_grid(
         axs[1, i].imshow(reconstruction[:, i].reshape(image_shape), cmap="gray")
         axs[1, i].axis("off")
 
-    axs[0, 0].set_ylabel("Original")
-    axs[1, 0].set_ylabel("Recon")
+    axs[0, 0].set_ylabel("Original", rotation=0, labelpad=45, va="center")
+    axs[1, 0].set_ylabel("Recon", rotation=0, labelpad=45, va="center")
 
     fig.suptitle(title)
-    _handle_output(save_path, dpi, show)
+    fig.subplots_adjust(top=0.82, hspace=0.05, wspace=0.05)
 
+    _handle_output(save_path, dpi, show, tight=False)
+
+
+def plot_three_block_combined_reconstruction_grid(
+    A,
+    reconstructions,
+    image_shape=(32, 32),
+    n_images=10,
+    row_labels=None,
+    title="COIL-20 Three-Block Reconstructions",
+    save_path=None,
+    dpi=300,
+    show=True,
+):
+    set_style()
+
+    if row_labels is None:
+        row_labels = ["Original"] + list(reconstructions.keys())
+
+    rows = [A] + list(reconstructions.values())
+    n_rows = len(rows)
+    n_images = min(n_images, A.shape[1])
+
+    fig, axs = plt.subplots(
+        n_rows,
+        n_images,
+        figsize=(2 * n_images, 2.2 * n_rows),
+        facecolor="white",
+    )
+
+    if n_rows == 1:
+        axs = np.array([axs])
+
+    for row_idx, row_data in enumerate(rows):
+        for col_idx in range(n_images):
+            ax = axs[row_idx, col_idx]
+            ax.imshow(row_data[:, col_idx].reshape(image_shape), cmap="gray")
+            ax.axis("off")
+
+        axs[row_idx, 0].text(
+            -0.28,
+            0.5,
+            row_labels[row_idx],
+            transform=axs[row_idx, 0].transAxes,
+            va="center",
+            ha="right",
+            fontsize=18,
+            color="black",
+        )
+
+    fig.suptitle(title)
+    fig.subplots_adjust(
+        left=0.12,
+        right=0.99,
+        top=0.88,
+        bottom=0.03,
+        hspace=0.08,
+        wspace=0.05,
+    )
+
+    _handle_output(save_path, dpi, show, tight=False)
+    
 
 def plot_three_block_dataset_comparison(
     coil_histories,
@@ -697,7 +766,7 @@ def plot_three_block_dataset_comparison(
 ):
     set_style()
 
-    fig, axs = plt.subplots(1, 2, figsize=(12, 5), facecolor="white")
+    fig, axs = plt.subplots(1, 2, figsize=(14, 5.5), facecolor="white")
 
     panels = [
         ("COIL-20 Dataset", coil_histories, axs[0]),
@@ -707,13 +776,20 @@ def plot_three_block_dataset_comparison(
     handles = []
     labels = []
 
-    for panel_title, histories, ax in panels:
-        for method, hist in histories.items():
-            line, = ax.plot(hist, label=method, **STYLES.get(method, {}))
+    methods = ["PALM", "FISTA-PALM"]
 
-            if panel_title == "COIL-20 Dataset":
-                handles.append(line)
-                labels.append(method)
+    for panel_title, histories, ax in panels:
+        for method in methods:
+            if method in histories:
+                line, = ax.plot(
+                    histories[method],
+                    label=method,
+                    **STYLES.get(method, {}),
+                )
+
+                if panel_title == "COIL-20 Dataset":
+                    handles.append(line)
+                    labels.append(method)
 
         ax.set_title(panel_title)
         ax.set_xlabel("Iteration")
